@@ -33,6 +33,8 @@ sample_dependencies += dependency('doca-dma')
 sample_dependencies += dependency('doca-argp')
 # Library used by the main() function
 sample_dependencies += dependency('libbsd')
+# Library used by multiple thread
+sample_dependencies += dependency('threads')
 
 sample_srcs = [
 	# The sample itself

@@ -45,8 +45,11 @@ main(int argc, char **argv)
 	strcpy(dma_conf.pci_address, "03:00.0");
 	strcpy(dma_conf.export_desc_path, "/tmp/export_desc.txt");
 	strcpy(dma_conf.buf_info_path, "/tmp/buffer_info.txt");
+	dma_conf.buffer_size = 10 * 1024 * 1024;
+	dma_conf.op_size = 8;
+	dma_conf.thread_num = 1;
 
-	result = doca_argp_init("dma_copy_dpu", &dma_conf);
+	result = doca_argp_init("dma_bench_dpu", &dma_conf);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to init ARGP resources: %s", doca_get_error_string(result));
 		return EXIT_FAILURE;

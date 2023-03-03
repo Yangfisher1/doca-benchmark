@@ -30,8 +30,20 @@
 struct dma_config {
 	char pci_address[MAX_ARG_SIZE];	     /* PCI device address */
 	int buffer_size;	     /* The local buffer size */
+	int op_size;			/* DMA size at each op */
+	int thread_num;			/* Thread num */
 	char export_desc_path[MAX_ARG_SIZE]; /* Path to save/read the exported descriptor file */
 	char buf_info_path[MAX_ARG_SIZE];    /* Path to save/read the buffer information file */
+};
+
+struct client_arg {
+	struct doca_pci_bdf *pcie_addr;
+	char export_desc_file_path[MAX_ARG_SIZE];
+	char buffer_info_file_path[MAX_ARG_SIZE];
+	int buffer_size;
+	int op_size;
+	int *counter;
+	int *running;
 };
 
 /*

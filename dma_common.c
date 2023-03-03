@@ -53,7 +53,7 @@ pci_callback(void *param, void *config)
 }
 
 /*
- * ARGP Callback - Handle text to copy parameter
+ * ARGP Callback - Handle buffer to copy parameter
  *
  * @param [in]: Input parameter
  * @config [in/out]: Program configuration context
@@ -71,6 +71,52 @@ buffer_callback(void *param, void *config)
 	}
 
 	conf->buffer_size = *buf_len;
+
+	return DOCA_SUCCESS;
+}
+
+/*
+ * ARGP Callback - Handle operation size to copy parameter
+ *
+ * @param [in]: Input parameter
+ * @config [in/out]: Program configuration context
+ * @return: DOCA_SUCCESS on success and DOCA_ERROR otherwise
+ */
+static doca_error_t
+op_callback(void *param, void *config)
+{
+	struct dma_config *conf = (struct dma_config *)config;
+	int *op_len = (int *)param;
+
+	if (*op_len > MAX_BUF_SIZE || *op_len < 0) {
+		DOCA_LOG_ERR("exceeded op size of: %d", MAX_BUF_SIZE);
+		return DOCA_ERROR_INVALID_VALUE;
+	}
+
+	conf->op_size = *op_len;
+
+	return DOCA_SUCCESS;
+}
+
+/*
+ * ARGP Callback - Handle thread number to copy parameter
+ *
+ * @param [in]: Input parameter
+ * @config [in/out]: Program configuration context
+ * @return: DOCA_SUCCESS on success and DOCA_ERROR otherwise
+ */
+static doca_error_t
+thread_callback(void *param, void *config)
+{
+	struct dma_config *conf = (struct dma_config *)config;
+	int *thread_num = (int *)param;
+
+	if (*thread_num < 0) {
+		DOCA_LOG_ERR("exceeded op size of: %d", MAX_BUF_SIZE);
+		return DOCA_ERROR_INVALID_VALUE;
+	}
+
+	conf->thread_num = *thread_num;
 
 	return DOCA_SUCCESS;
 }
@@ -141,7 +187,7 @@ doca_error_t
 register_dma_params()
 {
 	doca_error_t result;
-	struct doca_argp_param *pci_address_param, *cpy_txt_param, *export_desc_path_param, *buf_info_path_param;
+	struct doca_argp_param *pci_address_param, *cpy_txt_param, *export_desc_path_param, *buf_info_path_param, *thread_param, *op_param;
 
 	/* Create and register PCI address param */
 	result = doca_argp_param_create(&pci_address_param);
@@ -209,6 +255,42 @@ register_dma_params()
 	doca_argp_param_set_callback(buf_info_path_param, buf_info_path_callback);
 	doca_argp_param_set_type(buf_info_path_param, DOCA_ARGP_TYPE_STRING);
 	result = doca_argp_register_param(buf_info_path_param);
+	if (result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("Failed to register program param: %s", doca_get_error_string(result));
+		return result;
+	}
+
+	/* Create and register text to op param */
+	result = doca_argp_param_create(&op_param);
+	if (result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("Failed to create ARGP param: %s", doca_get_error_string(result));
+		return result;
+	}
+	doca_argp_param_set_short_name(op_param, "l");
+	doca_argp_param_set_long_name(op_param, "length");
+	doca_argp_param_set_description(op_param,
+					"Operation size");
+	doca_argp_param_set_callback(op_param, op_callback);
+	doca_argp_param_set_type(op_param, DOCA_ARGP_TYPE_INT);
+	result = doca_argp_register_param(op_param);
+	if (result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("Failed to register program param: %s", doca_get_error_string(result));
+		return result;
+	}
+
+	/* Create and register text to thread param */
+	result = doca_argp_param_create(&thread_param);
+	if (result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("Failed to create ARGP param: %s", doca_get_error_string(result));
+		return result;
+	}
+	doca_argp_param_set_short_name(thread_param, "t");
+	doca_argp_param_set_long_name(thread_param, "thread");
+	doca_argp_param_set_description(thread_param,
+					"thread number");
+	doca_argp_param_set_callback(thread_param, thread_callback);
+	doca_argp_param_set_type(thread_param, DOCA_ARGP_TYPE_INT);
+	result = doca_argp_register_param(thread_param);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to register program param: %s", doca_get_error_string(result));
 		return result;
