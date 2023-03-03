@@ -28,6 +28,9 @@ DOCA_LOG_REGISTER(DMA_COPY_DPU::MAIN);
 doca_error_t dma_copy_dpu(const char *export_desc_file_path, const char *buffer_info_file_path,
 				 struct doca_pci_bdf *pcie_addr);
 
+void
+dma_bench_dpu(struct dma_config *cfg, struct doca_pci_bdf *pcie_addr);
+
 /*
  * Sample main function
  *
@@ -76,12 +79,7 @@ main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	result = dma_copy_dpu(dma_conf.export_desc_path, dma_conf.buf_info_path, &pcie_dev);
-	if (result != DOCA_SUCCESS) {
-		DOCA_LOG_ERR("Sample function has failed: %s", doca_get_error_string(result));
-		doca_argp_destroy();
-		return EXIT_FAILURE;
-	}
+	dma_bench_dpu(&dma_conf, &pcie_dev);
 
 	doca_argp_destroy();
 
