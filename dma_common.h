@@ -22,14 +22,14 @@
 #include "common.h"
 
 #define MAX_ARG_SIZE 256   		/* Maximum size of input argument */
-#define MAX_TXT_SIZE 4096  		/* Maximum size of input text */
+#define MAX_BUF_SIZE 1024 * 1024 * 100  		/* Maximum size of local buffer */
 #define PAGE_SIZE sysconf(_SC_PAGESIZE) /* Page size */
 #define WORKQ_DEPTH 32	   		/* Work queue depth */
 
 /* Configuration struct */
 struct dma_config {
 	char pci_address[MAX_ARG_SIZE];	     /* PCI device address */
-	char cpy_txt[MAX_TXT_SIZE];	     /* Text to copy between the two local buffers */
+	int buffer_size;	     /* The local buffer size */
 	char export_desc_path[MAX_ARG_SIZE]; /* Path to save/read the exported descriptor file */
 	char buf_info_path[MAX_ARG_SIZE];    /* Path to save/read the buffer information file */
 };

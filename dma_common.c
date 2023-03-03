@@ -14,6 +14,7 @@
 #include <string.h>
 #include <bsd/string.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include <doca_buf_inventory.h>
 #include <doca_dev.h>
@@ -59,18 +60,17 @@ pci_callback(void *param, void *config)
  * @return: DOCA_SUCCESS on success and DOCA_ERROR otherwise
  */
 static doca_error_t
-text_callback(void *param, void *config)
+buffer_callback(void *param, void *config)
 {
 	struct dma_config *conf = (struct dma_config *)config;
-	const char *txt = (char *)param;
-	int txt_len = strnlen(txt, MAX_TXT_SIZE);
+	int *buf_len = (int *)param;
 
-	if (txt_len == MAX_TXT_SIZE) {
-		DOCA_LOG_ERR("Entered text exceeded buffer size of: %d", MAX_TXT_SIZE - 1);
+	if (*buf_len > MAX_BUF_SIZE || *buf_len < 0) {
+		DOCA_LOG_ERR("exceeded buffer size of: %d", MAX_BUF_SIZE);
 		return DOCA_ERROR_INVALID_VALUE;
 	}
 
-	strlcpy(conf->cpy_txt, txt, MAX_TXT_SIZE);
+	conf->buffer_size = *buf_len;
 
 	return DOCA_SUCCESS;
 }
@@ -166,12 +166,12 @@ register_dma_params()
 		DOCA_LOG_ERR("Failed to create ARGP param: %s", doca_get_error_string(result));
 		return result;
 	}
-	doca_argp_param_set_short_name(cpy_txt_param, "t");
-	doca_argp_param_set_long_name(cpy_txt_param, "text");
+	doca_argp_param_set_short_name(cpy_txt_param, "s");
+	doca_argp_param_set_long_name(cpy_txt_param, "size");
 	doca_argp_param_set_description(cpy_txt_param,
-					"Text to DMA copy from the Host to the DPU (relevant only on the Host side)");
-	doca_argp_param_set_callback(cpy_txt_param, text_callback);
-	doca_argp_param_set_type(cpy_txt_param, DOCA_ARGP_TYPE_STRING);
+					"The local buffer size");
+	doca_argp_param_set_callback(cpy_txt_param, buffer_callback);
+	doca_argp_param_set_type(cpy_txt_param, DOCA_ARGP_TYPE_INT);
 	result = doca_argp_register_param(cpy_txt_param);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to register program param: %s", doca_get_error_string(result));
