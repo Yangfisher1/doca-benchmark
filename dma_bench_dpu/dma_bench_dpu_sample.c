@@ -211,8 +211,14 @@ void *client_thread(void *arg) {
 	dma_job.base.type = DOCA_DMA_JOB_MEMCPY;
 	dma_job.base.flags = DOCA_JOB_FLAGS_NONE;
 	dma_job.base.ctx = state.ctx;
-	dma_job.dst_buff = dst_doca_buf;
-	dma_job.src_buff = src_doca_buf;
+
+	if (args->read != 0) {
+		dma_job.dst_buff = dst_doca_buf;
+		dma_job.src_buff = src_doca_buf;
+	} else {
+		dma_job.dst_buff = src_doca_buf;
+		dma_job.src_buff = dst_doca_buf;
+	}
 
 	/* Set data position in src_buff */
 	/* Set data pointer & data length */
@@ -268,9 +274,6 @@ void *client_thread(void *arg) {
 	if (doca_mmap_destroy(remote_mmap) != DOCA_SUCCESS)
 		DOCA_LOG_ERR("Failed to destroy remote memory map");
 
-	/* Inform host that DMA operation is done */
-	DOCA_LOG_INFO("Host sample can be closed, DMA copy ended");
-
 	/* Clean and destroy all relevant objects */
 	dma_cleanup(&state, dma_ctx);
 
@@ -298,6 +301,7 @@ dma_bench_dpu(struct dma_config *cfg, struct doca_pci_bdf *pcie_addr) {
 		args.running = &running;
 		args.buffer_size = cfg->buffer_size;
 		args.op_size = cfg->op_size;
+		args.read = cfg->read;
 
 
 		args.counter = counters[i];

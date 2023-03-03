@@ -32,6 +32,7 @@ struct dma_config {
 	int buffer_size;	     /* The local buffer size */
 	int op_size;			/* DMA size at each op */
 	int thread_num;			/* Thread num */
+	int read;				/* Data direction */
 	char export_desc_path[MAX_ARG_SIZE]; /* Path to save/read the exported descriptor file */
 	char buf_info_path[MAX_ARG_SIZE];    /* Path to save/read the buffer information file */
 };
@@ -42,6 +43,7 @@ struct client_arg {
 	char buffer_info_file_path[MAX_ARG_SIZE];
 	int buffer_size;
 	int op_size;
+	int read;
 	int *counter;
 	int *running;
 };

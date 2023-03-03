@@ -76,6 +76,24 @@ buffer_callback(void *param, void *config)
 }
 
 /*
+ * ARGP Callback - Handle direction to copy parameter
+ *
+ * @param [in]: Input parameter
+ * @config [in/out]: Program configuration context
+ * @return: DOCA_SUCCESS on success and DOCA_ERROR otherwise
+ */
+static doca_error_t
+read_callback(void *param, void *config)
+{
+	struct dma_config *conf = (struct dma_config *)config;
+	int *read = (int *)read;
+
+	conf->read = *read;
+
+	return DOCA_SUCCESS;
+}
+
+/*
  * ARGP Callback - Handle operation size to copy parameter
  *
  * @param [in]: Input parameter
@@ -187,7 +205,7 @@ doca_error_t
 register_dma_params()
 {
 	doca_error_t result;
-	struct doca_argp_param *pci_address_param, *cpy_txt_param, *export_desc_path_param, *buf_info_path_param, *thread_param, *op_param;
+	struct doca_argp_param *pci_address_param, *cpy_txt_param, *export_desc_path_param, *buf_info_path_param, *thread_param, *op_param, *read_param;
 
 	/* Create and register PCI address param */
 	result = doca_argp_param_create(&pci_address_param);
@@ -291,6 +309,24 @@ register_dma_params()
 	doca_argp_param_set_callback(thread_param, thread_callback);
 	doca_argp_param_set_type(thread_param, DOCA_ARGP_TYPE_INT);
 	result = doca_argp_register_param(thread_param);
+	if (result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("Failed to register program param: %s", doca_get_error_string(result));
+		return result;
+	}
+
+	/* Create and register text to read param */
+	result = doca_argp_param_create(&read_param);
+	if (result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("Failed to create ARGP param: %s", doca_get_error_string(result));
+		return result;
+	}
+	doca_argp_param_set_short_name(read_param, "r");
+	doca_argp_param_set_long_name(read_param, "read");
+	doca_argp_param_set_description(read_param,
+					"read direction");
+	doca_argp_param_set_callback(read_param, read_callback);
+	doca_argp_param_set_type(read_param, DOCA_ARGP_TYPE_INT);
+	result = doca_argp_register_param(read_param);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to register program param: %s", doca_get_error_string(result));
 		return result;
