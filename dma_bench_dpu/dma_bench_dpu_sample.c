@@ -311,8 +311,9 @@ dma_bench_dpu(struct dma_config *cfg, struct doca_pci_bdf *pcie_addr) {
 			total += *(counters[j]);
 		}
 
-		printf("Thpt: %.4f\n", (total - prev) / 10000.00);
+		printf("Thpt: %.4f * 10^4 reqs/sec \n", (total - prev) / 10000.00);
 		prev = total;
+		sleep(1);
 	}
 
 	// shutdown the benchmark
